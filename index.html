@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificatore Compatibilità Miscibilità Prodotti Liquidi ICL</title>
+    <style>
+        :root {
+            --primary: #0f392b;
+            --primary-light: #1b4332;
+            --accent-green: #2d6a4f;
+            --accent-light: #52b788;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            
+            --status-ok-bg: #dcfce7;
+            --status-ok-text: #15803d;
+            --status-ok-border: #86efac;
+            
+            --status-warn-bg: #fef9c3;
+            --status-warn-text: #a16207;
+            --status-warn-border: #fde047;
+            
+            --status-err-bg: #fee2e2;
+            --status-err-text: #b91c1c;
+            --status-err-border: #fca5a5;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 60%, var(--accent-green) 100%);
+            color: white;
+            padding: 24px;
+            border-bottom: 4px solid var(--accent-light);
+        }
+
+        header h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #d8f3dc;
+        }
+
+        .main-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .section-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .product-item:hover {
+            border-color: var(--accent-green);
+            background: #f1f5f9;
+        }
+
+        .product-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--accent-green);
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .product-cat {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .reset-btn {
+            background: #e2e8f0;
+            border: none;
+            color: #475569;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        /* Result Panel */
+        .result-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .overall-status {
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .status-empty {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #cbd5e1;
+        }
+
+        .status-ok {
+            background-color: var(--status-ok-bg);
+            color: var(--status-ok-text);
+            border-color: var(--status-ok-border);
+        }
+
+        .status-warn {
+            background-color: var(--status-warn-bg);
+            color: var(--status-warn-text);
+            border-color: var(--status-warn-border);
+        }
+
+        .status-error {
+            background-color: var(--status-err-bg);
+            color: var(--status-err-text);
+            border-color: var(--status-err-border);
+        }
+
+        .details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .pair-card {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            border-left: 5px solid;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .pair-card.ok {
+            border-left-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .pair-card.test {
+            border-left-color: #eab308;
+            background: #fefce8;
+        }
+
+        .pair-card.no {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .pair-header {
+            font-weight: 700;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pair-desc {
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .instructions-box {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+
+        .instructions-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+
+        .instructions-box ol {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 0.83rem;
+            color: #2d3748;
+        }
+
+        .instructions-box li {
+            margin-bottom: 4px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧪 Calcolatore Compatibilità Miscibilità ICL</h1>
+        <p>Seleziona i prodotti che intendi miscelare in botte per verificare istantaneamente la compatibilità chimico-fisica.</p>
+    </header>
+
+    <div class="main-content">
+        <!-- SELEZIONE PRODOTTI -->
+        <div class="section-box">
+            <div class="section-title">
+                <span>1. Seleziona Prodotti</span>
+                <button class="reset-btn" onclick="deselezionaTutti()">Deseleziona Tutto</button>
+            </div>
+            <div class="product-list" id="lista-prodotti">
+                <!-- Generato via JavaScript -->
+            </div>
+        </div>
+
+        <!-- RISULTATO COMPATIBILITÀ -->
+        <div class="section-box result-panel">
+            <div class="section-title">2. Esito della Miscela</div>
+            
+            <div id="stato-generale" class="overall-status status-empty">
+                Seleziona almeno 2 prodotti per verificare la miscibilità
+            </div>
+
+            <div id="dettagli-miscela" class="details-list">
+                <!-- Generato via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <div style="padding: 0 20px 20px 20px;">
+        <div class="instructions-box">
+            <h3>📋 Procedura Consigliata per il Riempimento della Botte</h3>
+            <ol>
+                <li>Riempire il serbatoio della botte per il <strong>60-70% con acqua pulita</strong> e azionare l'agitatore.</li>
+                <li>Aggiungere i prodotti <strong>uno alla volta</strong>, lasciando disciogliere bene prima del successivo.</li>
+                <li>Se presente <strong>Vitalnova SilK (Silicio)</strong>, va sempre aggiunto per ultimo e dopo diluizione.</li>
+                <li>Mantenere l'agitazione costante durante l'intero trattamento per prevenire sedimentazioni.</li>
+            </ol>
+        </div>
+    </div>
+
+    <footer>
+        Strumento informativo tecnico basato sulle linee guida di miscibilità per prodotti liquidi ICL. Effettuare sempre un Jar Test in caso di dubbi o acque particolarmente dure.
+    </footer>
+</div>
+
+<script>
+const PRODOTTI = [
+    { id: 'high_n', name: 'Greenmaster High N / NK / High K', cat: 'Concimi Liquidi NPK' },
+    { id: 'cal_mag', name: 'Greenmaster Cal-Mag (Calcio/Magnesio)', cat: 'Concimi Liquidi Specifici' },
+    { id: 'effect_iron', name: 'Greenmaster Effect Iron (Ferro Liquido)', cat: 'Correttivi / Ferro' },
+    { id: 'step', name: 'Greenmaster STEP (Microelementi)', cat: 'Microelementi Chelati' },
+    { id: 'stressbuster', name: 'Vitalnova Stressbuster / AminoBoost', cat: 'Biostimolanti' },
+    { id: 'smx', name: 'Vitalnova SMX / Blade (Alghe / Carbo)', cat: 'Biostimolanti Organici' },
+    { id: 'silk', name: 'Vitalnova SilK (Silicio Potassico)', cat: 'Potenziatori di Difesa' },
+    { id: 'hicure', name: 'Hicure (Aminoacidi Liberi)', cat: 'Biostimolante Amminoacidico' },
+    { id: 'aquasmart', name: 'H2Pro AquaSmart / TriSmart', cat: 'Agenti Umettanti (Wetting Agents)' },
+    { id: 'flowsmart', name: 'H2Pro FlowSmart', cat: 'Agente Penetrante' }
+];
+
+const MATRICE_COMPATIBILITA = {
+    'cal_mag|effect_iron': { status: 'no', note: 'Calcio e Ferro non vanno miscelati insieme per rischio di precipitazione di sali insolubili.' },
+    'cal_mag|silk': { status: 'no', note: 'Incompatibilità severa tra Calcio e Silicio. Si formano silicati di calcio insolubili che bloccano gli ugelli.' },
+    'effect_iron|silk': { status: 'no', note: 'Incompatibilità severa tra Ferro e Silicio potassico (rischio imbrunimento e precipitato).' },
+    'stressbuster|silk': { status: 'no', note: 'Incompatibilità chimica dovuta alla reattività del Silicio con complessi acidi/organici.' },
+    
+    'high_n|cal_mag': { status: 'test', note: 'Eseguire Jar Test: elevati livelli di azoto/fosforo possono reagire con il calcio in base alla durezza dell\'acqua.' },
+    'high_n|silk': { status: 'test', note: 'Verificare il pH finale della soluzione. Il silicio richiede ambienti neutro-alcalini.' },
+    'cal_mag|stressbuster': { status: 'test', note: 'Eseguire Jar Test preventivo prima dell\'immissione in botte.' },
+    'cal_mag|smx': { status: 'test', note: 'Eseguire Jar Test preventivo prima dell\'immissione in botte.' },
+    'step|silk': { status: 'test', note: 'Verificare la compatibilità del Silicio con i microelementi in soluzione concentrata.' },
+    'smx|silk': { status: 'test', note: 'Consigliata prova preventiva in piccolo recipiente.' },
+    'silk|hicure': { status: 'test', note: 'Jar Test consigliato a causa dell\'effetto tampone degli amminoacidi sul silicio.' }
+};
+
+function getPairKey(id1, id2) {
+    return [id1, id2].sort().join('|');
+}
+
+function inizializzaLista() {
+    const container = document.getElementById('lista-prodotti');
+    container.innerHTML = '';
+
+    PRODOTTI.forEach(p => {
+        const item = document.createElement('label');
+        item.className = 'product-item';
+        item.innerHTML = `
+            <input type="checkbox" value="${p.id}" onchange="calcolaMiscibilita()">
+            <div class="product-info">
+                <div class="product-name">${p.name}</div>
+                <div class="product-cat">${p.cat}</div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function deselezionaTutti() {
+    const checkboxes = document.querySelectorAll('#lista-prodotti input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    calcolaMiscibilita();
+}
+
+function calcolaMiscibilita() {
+    const checkboxes = document.querySelectorAll('#lista-prodotti input[type="checkbox"]:checked');
+    const selezioni = Array.from(checkboxes).map(cb => cb.value);
+
+    const divStato = document.getElementById('stato-generale');
+    const divDettagli = document.getElementById('dettagli-miscela');
+
+    divDettagli.innerHTML = '';
+
+    if (selezioni.length < 2) {
+        divStato.className = 'overall-status status-empty';
+        divStato.innerText = selezioni.length === 1 
+            ? 'Seleziona almeno un altro prodotto per verificare la compatibilità' 
+            : 'Seleziona almeno 2 prodotti per verificare la miscibilità';
+        return;
+    }
+
+    let peggiorStato = 'ok';
+    let coppieAnalizzate = [];
+
+    for (let i = 0; i < selezioni.length; i++) {
+        for (let j = i + 1; j < selezioni.length; j++) {
+            const p1 = PRODOTTI.find(p => p.id === selezioni[i]);
+            const p2 = PRODOTTI.find(p => p.id === selezioni[j]);
+            const key = getPairKey(p1.id, p2.id);
+
+            let info = MATRICE_COMPATIBILITA[key] || { 
+                status: 'ok', 
+                note: 'Miscela compatibile e sicura. Rispettare l\'ordine standard di immissione.' 
+            };
+
+            coppieAnalizzate.push({ p1: p1.name, p2: p2.name, ...info });
+
+            if (info.status === 'no') peggiorStato = 'no';
+            else if (info.status === 'test' && peggiorStato !== 'no') peggiorStato = 'test';
+        }
+    }
+
+    if (peggiorStato === 'no') {
+        divStato.className = 'overall-status status-error';
+        divStato.innerHTML = '❌ MISCELA NON COMPATIBILE<br><span style="font-weight:400; font-size:0.85rem;">Presenza di prodotti incompatibili che causano precipitati o reazioni dannose.</span>';
+    } else if (peggiorStato === 'test') {
+        divStato.className = 'overall-status status-warn';
+        divStato.innerHTML = '⚠️ ESEGUIRE JAR TEST PREVENTIVO<br><span style="font-weight:400; font-size:0.85rem;">La miscela è possibile ma richiede una prova preliminare in un piccolo recipiente.</span>';
+    } else {
+        divStato.className = 'overall-status status-ok';
+        divStato.innerHTML = '✅ MISCELA COMPATIBILE<br><span style="font-weight:400; font-size:0.85rem;">Tutti i prodotti selezionati possono essere miscelati in botte.</span>';
+    }
+
+    coppieAnalizzate.forEach(c => {
+        const card = document.createElement('div');
+        card.className = `pair-card ${c.status}`;
+        
+        let badgeText = 'COMPATIBILE';
+        if (c.status === 'test') badgeText = 'JAR TEST CONSIGLIATO';
+        if (c.status === 'no') badgeText = 'INCOMPATIBILE';
+
+        card.innerHTML = `
+            <div class="pair-header">
+                <span>${c.p1} + ${c.p2}</span>
+                <span>[${badgeText}]</span>
+            </div>
+            <div class="pair-desc">${c.note}</div>
+        `;
+        divDettagli.appendChild(card);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', inizializzaLista);
+</script>
+</body>
+</html>
